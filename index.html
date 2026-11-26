@@ -82,12 +82,12 @@ input:focus,select:focus{outline:2px solid var(--vinho-claro);border-color:trans
 .chart .tip b{display:block;font-size:15px}
 .chart .tip span{font-size:11px;opacity:.85}
 .eixo{font-size:11px;margin-top:4px}
-.chips{position:relative;display:flex;gap:6px;overflow-x:auto;margin:0 -16px 10px;padding:0 16px 2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.chips::-webkit-scrollbar{display:none}
-.chips button{flex:none;border:0;background:var(--creme-esc);color:var(--vinho);padding:9px 14px;border-radius:99px;font-size:14px;font-family:inherit;white-space:nowrap}
-.chips button.on{background:var(--vinho);color:#fff;font-weight:700}
+.per-topo{display:flex;gap:8px;margin-bottom:10px}
+.per-topo .btn{flex:1}
 .per-extra{margin-bottom:12px}
 .per-extra label{margin-top:0}
+.per-extra>div{min-width:0}
+.per-extra input{min-width:0;padding-left:8px;padding-right:8px}
 .per-extra .passo{width:46px;height:46px;flex:none;border:0;border-radius:12px;background:var(--creme-esc);color:var(--vinho);font-size:22px;font-weight:700;font-family:inherit}
 .per-rot{margin:-2px 2px 10px}
 .empty{text-align:center;color:var(--suave);padding:30px 10px}
@@ -187,14 +187,12 @@ function render() {
   $('#titulo').textContent = titulos[aba];
   $('#fab').style.display = aba === 'relatorios' ? 'none' : 'block';
   ({ vendas: telaVendas, clientes: telaClientes, produtos: telaProdutos, gastos: telaGastos, relatorios: telaRelatorios })[aba]();
-  const ch = $('.chips'), on = ch?.querySelector('.on');
-  if (on) ch.scrollLeft = on.offsetLeft - ch.clientWidth / 2 + on.offsetWidth / 2;
 }
 
 // ---------- períodos ----------
 const addDias = (iso, n) => { const d = new Date(iso + 'T12:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
 const curto = iso => iso.slice(8) + '/' + iso.slice(5, 7);
-const PERIODOS = [['hoje', 'Hoje'], ['ontem', 'Ontem'], ['3d', '3 dias'], ['semana', '7 dias'], ['30d', '30 dias'], ['mes', 'Mês'], ['mespassado', 'Mês passado'], ['ano', 'Ano'], ['tudo', 'Tudo'], ['dia', 'Escolher dia'], ['periodo', 'Período']];
+const PERIODOS = [['hoje', 'Hoje'], ['ontem', 'Ontem'], ['semana', '7 dias'], ['mes', 'Mês'], ['tudo', 'Tudo']];
 // um filtro por aba (não é salvo: ao reabrir o app volta ao padrão)
 const filtros = { vendas: { tipo: 'hoje' }, gastos: { tipo: 'mes' }, relatorios: { tipo: 'mes' } };
 
@@ -224,8 +222,10 @@ function barraPeriodo() {
     <input type="date" value="${a}" onchange="setCampoPer('dia',this.value)"><button class="passo" onclick="passoDia(1)" aria-label="Dia seguinte">›</button></div>`;
   else if (f.tipo === 'periodo') extra = `<div class="per-extra grid2"><div><label>De</label><input type="date" value="${f.de}" onchange="setCampoPer('de',this.value)"></div>
     <div><label>Até</label><input type="date" value="${f.ate}" onchange="setCampoPer('ate',this.value)"></div></div>`;
-  else if (a && !['hoje', 'ano'].includes(f.tipo)) extra = `<div class="muted per-rot">${a === b ? dataBR(a) : `${dataBR(a)} a ${dataBR(b)}`}</div>`;
-  return `<div class="chips">${PERIODOS.map(([k, l]) => `<button class="${k === f.tipo ? 'on' : ''}" onclick="setPer('${k}')">${l}</button>`).join('')}</div>${extra}`;
+  const rot = a && !['hoje', 'dia', 'periodo'].includes(f.tipo) ? `<div class="muted per-rot">${a === b ? dataBR(a) : `${dataBR(a)} a ${dataBR(b)}`}</div>` : '';
+  const bt = (k, l) => `<button class="btn mini ${f.tipo === k ? '' : 'sec'}" onclick="setPer('${k}')">${l}</button>`;
+  return `<div class="per-topo">${bt('dia', '📅 Escolher dia')}${bt('periodo', '📅 Período')}</div>${extra}
+    <div class="seg">${PERIODOS.map(([k, l]) => `<button class="${k === f.tipo ? 'on' : ''}" onclick="setPer('${k}')">${l}</button>`).join('')}</div>${rot}`;
 }
 function setPer(tipo) {
   const f = filtros[aba], h = hojeISO();
