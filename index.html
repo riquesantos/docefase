@@ -106,6 +106,14 @@ h2:first-child{margin-top:4px}
 .toast.show{opacity:1}
 .search{margin-bottom:12px}
 .total-line{display:flex;justify-content:space-between;align-items:center;font-size:18px;font-weight:700;color:var(--vinho);margin:14px 0}
+.recado-bg{position:fixed;inset:0;z-index:40;background:rgba(58,26,28,.5);display:grid;place-items:center;padding:24px;opacity:0;transition:opacity .25s}
+.recado-bg.show{opacity:1}
+.recado{background:var(--papel);border-radius:22px;padding:26px 22px 20px;max-width:340px;width:100%;text-align:center;box-shadow:0 18px 50px rgba(58,26,28,.35);transform:scale(.92);transition:transform .25s}
+.recado-bg.show .recado{transform:none}
+.recado .cor{font-size:44px;line-height:1}
+.recado h3{margin:10px 0 8px;color:var(--vinho);font-size:24px;font-family:"Didot","Bodoni 72",Georgia,serif}
+.recado p{margin:0 0 14px;line-height:1.45}
+.recado .ass{font-family:"Snell Roundhand","Segoe Script","Brush Script MT",cursive;font-size:24px;color:var(--vinho);margin-bottom:18px}
 </style>
 </head>
 <body>
@@ -581,7 +589,28 @@ function importar(f) {
   r.readAsText(f);
 }
 
+// ---------- recado do dia ----------
+// aparece uma vez por dia, na primeira vez que o app é aberto (chave separada dos dados)
+const KEY_RECADO = 'docefase-recado';
+function recadoDoDia() {
+  const h = hojeISO();
+  try { if (localStorage.getItem(KEY_RECADO) === h) return; localStorage.setItem(KEY_RECADO, h); } catch { return; }
+  if ($('#recado')) return;
+  const bg = document.createElement('div');
+  bg.className = 'recado-bg'; bg.id = 'recado';
+  bg.innerHTML = `<div class="recado"><div class="cor">❤️</div><h3>Boas vendas!</h3>
+    <p>Que hoje seja um dia ótimo de vendas de brownie.</p>
+    <div class="ass">Henrique ❤️</div>
+    <button class="btn" onclick="fecharRecado()">Obrigada!</button></div>`;
+  bg.onclick = e => { if (e.target === bg) fecharRecado(); };
+  document.body.appendChild(bg);
+  requestAnimationFrame(() => bg.classList.add('show'));
+}
+function fecharRecado() { const bg = $('#recado'); if (!bg) return; bg.classList.remove('show'); setTimeout(() => bg.remove(), 250); }
+document.addEventListener('visibilitychange', () => { if (!document.hidden) recadoDoDia(); });
+
 render();
+recadoDoDia();
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js');
 if (navigator.storage?.persist) navigator.storage.persist();
 </script>
